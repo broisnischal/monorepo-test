@@ -3,9 +3,9 @@ services:
     image: caddy:2-alpine
     container_name: caddy
     ports:
-      - "${CADDY_HTTP_PORT:-80}:80"
-      - "${CADDY_HTTPS_PORT:-443}:443"
-      - "2019:2019" # Caddy admin interface
+      - "${CADDY_HTTP_PORT:-880}:80"
+      - "${CADDY_HTTPS_PORT:-4443}:443"
+      - "${CADDY_ADMIN_PORT:-2019}:2019"
     volumes:
       - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - ./caddy/certificates:/data/caddy/certificates:ro
