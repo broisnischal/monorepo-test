@@ -1,0 +1,80 @@
+services:
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - default
+
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile.api
+    environment:
+      NODE_ENV: production
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  ui:
+    build:
+      context: ./apps/ui
+      dockerfile: Dockerfile.ui
+    environment:
+      NODE_ENV: production
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+  smtp:
+    build:
+      context: apps/smtp
+      dockerfile: Dockerfile
+      target: runner
+    env_file: .env
+    environment:
+      SMTP_PORT: 25
+      GMAIL_USER: ${GMAIL_USER:-nischalm3pro@gmail.com}
+      GMAIL_APP_PASSWORD: ${GMAIL_APP_PASSWORD}
+      DATABASE_URL: ${DATABASE_URL}
+      API_URL: ${API_URL:-http://api:3000/api}
+      NODE_ENV: production
+    cap_add:
+      - NET_BIND_SERVICE
+    ports:
+      - "${SMTP_PORT:-25}:25"
+    volumes:
+      - ./apps/generated:/app/generated
+      #/app/src/index.ts
+      #/app/generated
+    # depends_on:
+    #   api:
+    #     condition: service_healthy
+    # restart: unless-stopped
+    networks:
+      - default
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  default:
+    driver: bridge

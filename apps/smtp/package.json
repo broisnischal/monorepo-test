@@ -1,0 +1,26 @@
+{
+  "name": "smtp",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "bun run src/index.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/node": "^24.0.10"
+  },
+  "peerDependencies": {
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^6.12.0",
+    "@prisma/client": "^6.12.0",
+    "@types/mailparser": "^3.4.6",
+    "@types/nodemailer": "^6.4.17",
+    "@types/smtp-server": "^3.5.10",
+    "mailparser": "^3.7.4",
+    "nodemailer": "^7.0.5",
+    "smtp-server": "^3.14.0"
+  }
+}

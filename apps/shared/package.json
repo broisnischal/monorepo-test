@@ -1,0 +1,19 @@
+{
+  "name": "shared",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "migrate": "bun run ./index.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.12.0",
+    "prisma": "^6.12.0"
+  }
+}
