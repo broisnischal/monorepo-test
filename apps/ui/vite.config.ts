@@ -4,9 +4,22 @@ import { defineConfig } from "vite";
 
 export default defineConfig({
   plugins: [reactRouter(), tailwind()],
+  ssr: {
+    external: ["react-dom/server"],
+  },
+  build: {
+    target: "esnext", // or 'node16' if Node
+  },
+  server: {
+    port: 3000,
+    hmr: {
+      host: "localhost",
+      overlay: false,
+    },
+  },
   resolve: {
     alias: {
-      "react-dom/server": "react-dom/server.node",
+      // "react-dom/server": "react-dom/server.node",
     },
   },
 });

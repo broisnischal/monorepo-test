@@ -175,7 +175,7 @@ type GetConnectionGroupByPayload<T extends ConnectionGroupByArgs> = Prisma.Prism
           : Prisma.GetScalarType<T[P], ConnectionGroupByOutputType[P]>
       }
     >
-  > 
+  >
 
 
 

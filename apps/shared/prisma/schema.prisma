@@ -1,6 +1,6 @@
 generator client {
   provider        = "prisma-client"
-  previewFeatures = ["driverAdapters", "queryCompiler", "multiSchema"]
+  previewFeatures = ["driverAdapters", "queryCompiler"]
   output          = "../../generated"
 }
 

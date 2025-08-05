@@ -234,7 +234,7 @@ type GetPlanGroupByPayload<T extends PlanGroupByArgs> = Prisma.PrismaPromise<
           : Prisma.GetScalarType<T[P], PlanGroupByOutputType[P]>
       }
     >
-  > 
+  >
 
 
 

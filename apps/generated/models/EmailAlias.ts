@@ -241,7 +241,7 @@ type GetEmailAliasGroupByPayload<T extends EmailAliasGroupByArgs> = Prisma.Prism
           : Prisma.GetScalarType<T[P], EmailAliasGroupByOutputType[P]>
       }
     >
-  > 
+  >
 
 
 

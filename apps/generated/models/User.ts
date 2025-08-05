@@ -175,7 +175,7 @@ type GetUserGroupByPayload<T extends UserGroupByArgs> = Prisma.PrismaPromise<
           : Prisma.GetScalarType<T[P], UserGroupByOutputType[P]>
       }
     >
-  > 
+  >
 
 
 

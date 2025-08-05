@@ -154,7 +154,7 @@ type GetEmailGroupByPayload<T extends EmailGroupByArgs> = Prisma.PrismaPromise<
           : Prisma.GetScalarType<T[P], EmailGroupByOutputType[P]>
       }
     >
-  > 
+  >
 
 
 

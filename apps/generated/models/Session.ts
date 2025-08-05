@@ -168,7 +168,7 @@ type GetSessionGroupByPayload<T extends SessionGroupByArgs> = Prisma.PrismaPromi
           : Prisma.GetScalarType<T[P], SessionGroupByOutputType[P]>
       }
     >
-  > 
+  >
 
 
 

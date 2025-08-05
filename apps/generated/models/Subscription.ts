@@ -224,7 +224,7 @@ type GetSubscriptionGroupByPayload<T extends SubscriptionGroupByArgs> = Prisma.P
           : Prisma.GetScalarType<T[P], SubscriptionGroupByOutputType[P]>
       }
     >
-  > 
+  >
 
 
 

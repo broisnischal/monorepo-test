@@ -22,7 +22,7 @@ const config: runtime.GetPrismaClientConfig = {
       "value": "prisma-client"
     },
     "output": {
-      "value": "/home/nees/monorepo/apps/generated",
+      "value": "/Users/nees/monorepo-test/apps/generated",
       "fromEnvVar": null
     },
     "config": {
@@ -31,26 +31,24 @@ const config: runtime.GetPrismaClientConfig = {
     "binaryTargets": [
       {
         "fromEnvVar": null,
-        "value": "debian-openssl-3.0.x",
+        "value": "darwin-arm64",
         "native": true
       }
     ],
     "previewFeatures": [
       "driverAdapters",
-      "multiSchema",
       "queryCompiler"
     ],
-    "sourceFilePath": "/home/nees/monorepo/apps/shared/prisma/schema.prisma",
+    "sourceFilePath": "/Users/nees/monorepo-test/apps/shared/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativePath": "../shared/prisma",
-  "clientVersion": "6.12.0",
-  "engineVersion": "8047c96bbd92db98a2abc7c9323ce77c02c89dbc",
+  "clientVersion": "6.13.0",
+  "engineVersion": "361e86d0ea4987e9f53a565309b3eed797a6bcbd",
   "datasourceNames": [
     "db"
   ],
   "activeProvider": "postgresql",
-  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {
@@ -59,8 +57,8 @@ const config: runtime.GetPrismaClientConfig = {
       }
     }
   },
-  "inlineSchema": "generator client {\n  provider        = \"prisma-client\"\n  previewFeatures = [\"driverAdapters\", \"queryCompiler\", \"multiSchema\"]\n  output          = \"../../generated\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = \"postgresql://postgres:postgres@localhost:5455/postgres?schema=public\"\n  schemas  = [\"base\", \"public\", \"transactional\"]\n}\n\nenum SubscriptionStatus {\n  TRIAL\n  ACTIVE\n  CANCELED\n  INCOMPLETE\n  PAST_DUE\n\n  @@schema(\"public\")\n}\n\nenum SubscriptionInterval {\n  MONTH\n  YEAR\n\n  @@schema(\"public\")\n}\n\nmodel User {\n  id        String   @id @default(uuid())\n  email     String   @unique\n  name      String?\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  aliases     EmailAlias[]\n  sessions    Session[]\n  connections Connection[]\n\n  subscription     Subscription?\n  stripeCustomerId String?       @unique\n\n  @@map(\"users\")\n  @@schema(\"public\")\n}\n\n// --- NEW: PLAN MODEL ---\n// Defines the different subscription plans you offer.\nmodel Plan {\n  id        String   @id @default(cuid())\n  name      String   @unique // e.g., \"Free\", \"Pro\", \"Business\"\n  active    Boolean  @default(true)\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  // --- Plan Limits ---\n  // Based on your existing schema. Use -1 for unlimited.\n  maxAliases          Int @default(5)\n  maxForwardsPerMonth Int @default(100)\n\n  // --- Pricing Information ---\n  // Store price IDs from your payment provider (e.g., Stripe).\n  stripePriceIdMonthly String?\n  stripePriceIdYearly  String?\n\n  // A plan can have many subscriptions.\n  subscriptions Subscription[]\n\n  @@map(\"plans\")\n  @@schema(\"public\")\n}\n\n// --- NEW: SUBSCRIPTION MODEL ---\n// Represents a user's subscription to a specific plan.\nmodel Subscription {\n  id String @id @default(cuid())\n\n  // The unique subscription ID from your payment provider (e.g., Stripe).\n  // This is the key to managing the subscription via webhooks.\n  stripeSubscriptionId String @unique\n\n  status   SubscriptionStatus\n  interval SubscriptionInterval\n\n  // The period the user has paid for.\n  currentPeriodStart DateTime\n  currentPeriodEnd   DateTime\n\n  // Set to true when a user cancels, but the subscription\n  // remains active until the current period ends.\n  cancelAtPeriodEnd Boolean   @default(false)\n  canceledAt        DateTime?\n  trialEnd          DateTime?\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  // --- Relationships ---\n  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)\n  userId String @unique // A user can only have one subscription.\n\n  plan   Plan   @relation(fields: [planId], references: [id], onDelete: Cascade)\n  planId String\n\n  @@map(\"subscriptions\")\n  @@schema(\"public\")\n}\n\nmodel Email {\n  id      String     @id @default(cuid())\n  address String\n  aliasId String\n  alias   EmailAlias @relation(fields: [aliasId], references: [id], onDelete: Cascade)\n\n  @@map(\"email\")\n  @@schema(\"public\")\n}\n\nmodel EmailAlias {\n  id    String @id @default(cuid())\n  alias String @unique // e.g., abc@snehaa.store\n\n  domain String @default(\"snehaa.store\")\n\n  maxAge Int @default(10)\n\n  userId     String\n  isActive   Boolean   @default(true)\n  emailCount Int       @default(0)\n  expiresAt  DateTime?\n  createdAt  DateTime  @default(now())\n  updatedAt  DateTime  @updatedAt\n\n  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)\n  emailLogs EmailLog[]\n  email     Email[]\n\n  @@map(\"email_aliases\")\n  @@schema(\"public\")\n}\n\nmodel EmailLog {\n  id          String    @id @default(cuid())\n  aliasId     String\n  fromEmail   String\n  toEmail     String // The real email it was forwarded to\n  subject     String\n  body        String?\n  headers     String? // JSON string of headers\n  status      String // 'forwarded', 'blocked', 'expired', 'failed'\n  receivedAt  DateTime  @default(now())\n  forwardedAt DateTime?\n\n  alias EmailAlias @relation(fields: [aliasId], references: [id], onDelete: Cascade)\n\n  @@map(\"email_logs\")\n  @@schema(\"public\")\n}\n\nmodel Session {\n  id             String   @id @default(cuid())\n  expirationDate DateTime\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)\n  userId String\n\n  // non-unique foreign key\n  @@index([userId])\n  @@schema(\"public\")\n}\n\nmodel Connection {\n  id           String @id @default(cuid())\n  providerName String\n  providerId   String\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)\n  userId String\n\n  @@unique([providerName, providerId])\n  @@schema(\"public\")\n}\n",
-  "inlineSchemaHash": "06489679fc714da6021b6a27eaae3b2df1f8fc3181bb858e24ad5b955454a911",
+  "inlineSchema": "generator client {\n  provider        = \"prisma-client\"\n  previewFeatures = [\"driverAdapters\", \"queryCompiler\"]\n  output          = \"../../generated\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = \"postgresql://postgres:postgres@localhost:5455/postgres?schema=public\"\n  schemas  = [\"base\", \"public\", \"transactional\"]\n}\n\nenum SubscriptionStatus {\n  TRIAL\n  ACTIVE\n  CANCELED\n  INCOMPLETE\n  PAST_DUE\n\n  @@schema(\"public\")\n}\n\nenum SubscriptionInterval {\n  MONTH\n  YEAR\n\n  @@schema(\"public\")\n}\n\nmodel User {\n  id        String   @id @default(uuid())\n  email     String   @unique\n  name      String?\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  aliases     EmailAlias[]\n  sessions    Session[]\n  connections Connection[]\n\n  subscription     Subscription?\n  stripeCustomerId String?       @unique\n\n  @@map(\"users\")\n  @@schema(\"public\")\n}\n\n// --- NEW: PLAN MODEL ---\n// Defines the different subscription plans you offer.\nmodel Plan {\n  id        String   @id @default(cuid())\n  name      String   @unique // e.g., \"Free\", \"Pro\", \"Business\"\n  active    Boolean  @default(true)\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  // --- Plan Limits ---\n  // Based on your existing schema. Use -1 for unlimited.\n  maxAliases          Int @default(5)\n  maxForwardsPerMonth Int @default(100)\n\n  // --- Pricing Information ---\n  // Store price IDs from your payment provider (e.g., Stripe).\n  stripePriceIdMonthly String?\n  stripePriceIdYearly  String?\n\n  // A plan can have many subscriptions.\n  subscriptions Subscription[]\n\n  @@map(\"plans\")\n  @@schema(\"public\")\n}\n\n// --- NEW: SUBSCRIPTION MODEL ---\n// Represents a user's subscription to a specific plan.\nmodel Subscription {\n  id String @id @default(cuid())\n\n  // The unique subscription ID from your payment provider (e.g., Stripe).\n  // This is the key to managing the subscription via webhooks.\n  stripeSubscriptionId String @unique\n\n  status   SubscriptionStatus\n  interval SubscriptionInterval\n\n  // The period the user has paid for.\n  currentPeriodStart DateTime\n  currentPeriodEnd   DateTime\n\n  // Set to true when a user cancels, but the subscription\n  // remains active until the current period ends.\n  cancelAtPeriodEnd Boolean   @default(false)\n  canceledAt        DateTime?\n  trialEnd          DateTime?\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  // --- Relationships ---\n  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)\n  userId String @unique // A user can only have one subscription.\n\n  plan   Plan   @relation(fields: [planId], references: [id], onDelete: Cascade)\n  planId String\n\n  @@map(\"subscriptions\")\n  @@schema(\"public\")\n}\n\nmodel Email {\n  id      String     @id @default(cuid())\n  address String\n  aliasId String\n  alias   EmailAlias @relation(fields: [aliasId], references: [id], onDelete: Cascade)\n\n  @@map(\"email\")\n  @@schema(\"public\")\n}\n\nmodel EmailAlias {\n  id    String @id @default(cuid())\n  alias String @unique // e.g., abc@snehaa.store\n\n  domain String @default(\"snehaa.store\")\n\n  maxAge Int @default(10)\n\n  userId     String\n  isActive   Boolean   @default(true)\n  emailCount Int       @default(0)\n  expiresAt  DateTime?\n  createdAt  DateTime  @default(now())\n  updatedAt  DateTime  @updatedAt\n\n  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)\n  emailLogs EmailLog[]\n  email     Email[]\n\n  @@map(\"email_aliases\")\n  @@schema(\"public\")\n}\n\nmodel EmailLog {\n  id          String    @id @default(cuid())\n  aliasId     String\n  fromEmail   String\n  toEmail     String // The real email it was forwarded to\n  subject     String\n  body        String?\n  headers     String? // JSON string of headers\n  status      String // 'forwarded', 'blocked', 'expired', 'failed'\n  receivedAt  DateTime  @default(now())\n  forwardedAt DateTime?\n\n  alias EmailAlias @relation(fields: [aliasId], references: [id], onDelete: Cascade)\n\n  @@map(\"email_logs\")\n  @@schema(\"public\")\n}\n\nmodel Session {\n  id             String   @id @default(cuid())\n  expirationDate DateTime\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)\n  userId String\n\n  // non-unique foreign key\n  @@index([userId])\n  @@schema(\"public\")\n}\n\nmodel Connection {\n  id           String @id @default(cuid())\n  providerName String\n  providerId   String\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)\n  userId String\n\n  @@unique([providerName, providerId])\n  @@schema(\"public\")\n}\n",
+  "inlineSchemaHash": "4b85890404ea7b6f4b742543bcbd4245b3fd18de8c7748bf166de0ce4682bcf3",
   "copyEngine": true,
   "runtimeDataModel": {
     "models": {},
@@ -116,7 +114,7 @@ export interface PrismaClientConstructor {
 
   new <
     ClientOptions extends Prisma.PrismaClientOptions = Prisma.PrismaClientOptions,
-    U = LogOptions<ClientOptions>,
+    const U = LogOptions<ClientOptions>,
     ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs
   >(options?: Prisma.Subset<ClientOptions, Prisma.PrismaClientOptions>): PrismaClient<ClientOptions, U, ExtArgs>
 }

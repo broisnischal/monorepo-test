@@ -203,7 +203,7 @@ type GetEmailLogGroupByPayload<T extends EmailLogGroupByArgs> = Prisma.PrismaPro
           : Prisma.GetScalarType<T[P], EmailLogGroupByOutputType[P]>
       }
     >
-  > 
+  >
 
 
 
