@@ -19,7 +19,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      // "react-dom/server": "react-dom/server.node",
+      "react-dom/server": "react-dom/server.node",
     },
   },
 });
